@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HungryApp — UML Diagram Suite</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+  :root {
+    --bg: #0c0c10;
+    --bg2: #131318;
+    --card: #1a1b23;
+    --border: #2a2b36;
+    --fg: #e8e8ec;
+    --muted: #7a7b8e;
+    --accent: #f97316;
+    --accent2: #fb923c;
+    --cyan: #22d3ee;
+    --green: #34d399;
+    --rose: #fb7185;
+    --violet: #a78bfa;
+    --blue: #60a5fa;
+    --yellow: #fbbf24;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Space Grotesk', sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  /* Subtle animated background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 600px 400px at 10% 20%, rgba(249,115,22,0.06), transparent),
+      radial-gradient(ellipse 500px 500px at 90% 80%, rgba(34,211,238,0.04), transparent),
+      radial-gradient(ellipse 400px 300px at 50% 50%, rgba(167,139,250,0.03), transparent);
+    pointer-events: none;
+    z-index: 0;
+  }
+  header {
+    position: relative; z-index: 1;
+    text-align: center;
+    padding: 40px 20px 10px;
+  }
+  header h1 {
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    background: linear-gradient(135deg, var(--accent), var(--accent2), var(--yellow));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  header p {
+    color: var(--muted);
+    font-size: 0.95rem;
+    margin-top: 6px;
+    font-weight: 400;
+  }
+  header .uni {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--muted);
+    opacity: 0.6;
+    margin-top: 4px;
+    letter-spacing: 0.05em;
+  }
+  nav {
+    position: relative; z-index: 1;
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    padding: 20px 16px 12px;
+    flex-wrap: wrap;
+  }
+  .tab-btn {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 500;
+    padding: 9px 18px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--card);
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.25s ease;
+    white-space: nowrap;
+  }
+  .tab-btn:hover {
+    border-color: var(--accent);
+    color: var(--fg);
+    background: rgba(249,115,22,0.08);
+  }
+  .tab-btn.active {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(249,115,22,0.12);
+    box-shadow: 0 0 20px rgba(249,115,22,0.1);
+  }
+  .tab-btn i { margin-right: 6px; font-size: 0.75rem; }
+  main {
+    position: relative; z-index: 1;
+    padding: 0 16px 40px;
+  }
+  .diagram-wrap {
+    display: none;
+    max-width: 1400px;
+    margin: 0 auto;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--card);
+    overflow: hidden;
+    animation: fadeUp 0.4s ease;
+  }
+  .diagram-wrap.active { display: block; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .diagram-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(255,255,255,0.01);
+  }
+  .diagram-header h2 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--fg);
+  }
+  .diagram-header .badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: rgba(249,115,22,0.12);
+    color: var(--accent);
+    border: 1px solid rgba(249,115,22,0.2);
+  }
+  .zoom-controls {
+    display: flex; gap: 4px;
+  }
+  .zoom-btn {
+    width: 30px; height: 30px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 0.8rem;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .zoom-btn:hover { color: var(--fg); border-color: var(--accent); }
+  .diagram-scroll {
+    overflow: auto;
+    max-height: 80vh;
+    padding: 20px;
+  }
+  .diagram-scroll::-webkit-scrollbar { width: 8px; height: 8px; }
+  .diagram-scroll::-webkit-scrollbar-track { background: var(--bg2); }
+  .diagram-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+  .diagram-scroll::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+  svg text {
+    font-family: 'Space Grotesk', sans-serif;
+  }
+  svg .mono { font-family: 'JetBrains Mono', monospace; }
+  /* Legend */
+  .legend {
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+    padding: 10px 20px 14px;
+    border-top: 1px solid var(--border);
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.72rem;
+    color: var(--muted);
+  }
+  .legend-dot {
+    width: 10px; height: 10px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+  @media (max-width: 768px) {
+    nav { gap: 4px; }
+    .tab-btn { font-size: 0.72rem; padding: 7px 12px; }
+    .tab-btn span { display: none; }
+    .diagram-scroll { max-height: 70vh; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <p class="uni">VILNIAUS GEDIMINO TECHNIKOS UNIVERSITETAS — FUNDAMENTINIŲ MOKSLŲ FAKULTETAS</p>
+  <h1>HungryApp — UML Diagram Suite</h1>
+  <p>Food Delivery Management System — Course Project Documentation (Vilnius, 2025)</p>
+</header>
+
+<nav id="tabNav">
+  <button class="tab-btn active" data-tab="0"><i class="fa-solid fa-users"></i><span>Use Case</span></button>
+  <button class="tab-btn" data-tab="1"><i class="fa-solid fa-diagram-project"></i><span>ER Diagram</span></button>
+  <button class="tab-btn" data-tab="2"><i class="fa-solid fa-cubes"></i><span>Class Diagram</span></button>
+  <button class="tab-btn" data-tab="3"><i class="fa-solid fa-key"></i><span>Seq: Auth</span></button>
+  <button class="tab-btn" data-tab="4"><i class="fa-solid fa-cart-shopping"></i><span>Seq: Order</span></button>
+  <button class="tab-btn" data-tab="5"><i class="fa-solid fa-truck"></i><span>Seq: Claim</span></button>
+</nav>
+
+<main>
+
+<!-- ============ DIAGRAM 1: USE CASE ============ -->
+<div class="diagram-wrap active" id="dw0">
+  <div class="diagram-header">
+    <h2>Use Case Diagram — System Actors and Capabilities</h2>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <span class="badge">UML 2.5</span>
+      <div class="zoom-controls">
+        <button class="zoom-btn" onclick="zoom(0,-0.1)"><i class="fa-solid fa-minus"></i></button>
+        <button class="zoom-btn" onclick="zoom(0,0)"><i class="fa-solid fa-expand"></i></button>
+        <button class="zoom-btn" onclick="zoom(0,0.1)"><i class="fa-solid fa-plus"></i></button>
+      </div>
+    </div>
+  </div>
+  <div class="diagram-scroll">
+    <svg id="svg0" viewBox="0 0 1280 920" style="min-width:900px;">
+      <defs>
+        <filter id="glow"><feGaussianBlur stdDeviation="3" result="g"/><feMerge><feMergeNode in="g"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      </defs>
+      <!-- Grid -->
+      <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+        <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.02)" stroke-width="0.5"/>
+      </pattern>
+      <rect width="1280" height="920" fill="url(#grid)"/>
+
+      <!-- System Boundary -->
+      <rect x="235" y="25" width="810" height="870" rx="12" fill="none" stroke="var(--accent)" stroke-width="2" stroke-dasharray="8,4" opacity="0.5"/>
+      <text x="640" y="55" text-anchor="middle" fill="var(--accent)" font-size="14" font-weight="700" letter-spacing="0.05em">HUNGRYAPP — FOOD DELIVERY SYSTEM</text>
+
+      <!-- === ACTORS === -->
+      <!-- Customer -->
+      <g transform="translate(90,195)">
+        <circle cx="0" cy="-30" r="16" fill="none" stroke="var(--fg)" stroke-width="2"/>
+        <line x1="0" y1="-14" x2="0" y2="20" stroke="var(--fg)" stroke-width="2"/>
+        <line x1="-18" y1="0" x2="18" y2="0" stroke="var(--fg)" stroke-width="2"/>
+        <line x1="0" y1="20" x2="-14" y2="48" stroke="var(--fg)" stroke-width="2"/>
+        <line x1="0" y1="20" x2="14" y2="48" stroke="var(--fg)" stroke-width="2"/>
+        <text x="0" y="68" text-anchor="middle" fill="var(--fg)" font-size="13" font-weight="600">Customer</text>
+        <text x="0" y="82" text-anchor="middle" fill="var(--muted)" font-size="10">(Client)</text>
+      </g>
+      <!-- Driver -->
+      <g transform="translate(90,570)">
+        <circle cx="0" cy="-30" r="16" fill="none" stroke="var(--cyan)" stroke-width="2"/>
+        <line x1="0" y1="-14" x2="0" y2="20" stroke="var(--cyan)" stroke-width="2"/>
+        <line x1="-18" y1="0" x2="18" y2="0" stroke="var(--cyan)" stroke-width="2"/>
+        <line x1="0" y1="20" x2="-14" y2="48" stroke="var(--cyan)" stroke-width="2"/>
+        <line x1="0" y1="20" x2="14" y2="48" stroke="var(--cyan)" stroke-width="2"/>
+        <text x="0" y="68" text-anchor="middle" fill="var(--cyan)" font-size="13" font-weight="600">Driver</text>
+        <text x="0" y="82" text-anchor="middle" fill="var(--muted)" font-size="10">(Courier)</text>
+      </g>
+      <!-- Restaurant Admin -->
+      <g transform="translate(1190,250)">
+        <circle cx="0" cy="-30" r="16" fill="none" stroke="var(--green)" stroke-width="2"/>
+        <line x1="0" y1="-14" x2="0" y2="20" stroke="var(--green)" stroke-width="2"/>
+        <line x1="-18" y1="0" x2="18" y2="0" stroke="var(--green)" stroke-width="2"/>
+        <line x1="0" y1="20" x2="-14" y2="48" stroke="var(--green)" stroke-width="2"/>
+        <line x1="0" y1="20" x2="14" y2="48" stroke="var(--green)" stroke-width="2"/>
+        <text x="0" y="68" text-anchor="middle" fill="var(--green)" font-size="13" font-weight="600">Restaurant</text>
+        <text x="0" y="82" text-anchor="middle" fill="var(--green)" font-size="13" font-weight="600">Admin</text>
+      </g>
+      <!-- System Admin -->
+      <g transform="translate(1190,650)">
+        <circle cx="0" cy="-30" r="16" fill="none" stroke="var(--violet)" stroke-width="2"/>
+        <line x1="0" y1="-14" x2="0" y2="20" stroke="var(--violet)" stroke-width="2"/>
+        <line x1="-18" y1="0" x2="18" y2="0" stroke="var(--violet)" stroke-width="2"/>
+        <line x1="0" y1="20" x2="-14" y2="48" stroke="var(--violet)" stroke-width="2"/>
+        <line x1="0" y1="20" x2="14" y2="48" stroke="var(--violet)" stroke-width="2"/>
+        <text x="0" y="68" text-anchor="middle" fill="var(--violet)" font-size="13" font-weight="600">System</text>
+        <text x="0" y="82" text-anchor="middle" fill="var(--violet)" font-size="13" font-weight="600">Admin</text>
+      </g>
+
+      <!-- === USE CASES === -->
+      <!-- Shared: Register/Login -->
+      <ellipse cx="640" cy="100" rx="105" ry="26" fill="rgba(249,115,22,0.08)" stroke="var(--accent)" stroke-width="1.5"/>
+      <text x="640" y="105" text-anchor="middle" fill="var(--fg)" font-size="12" font-weight="500">Register / Login</text>
+
+      <!-- Customer UCs -->
+      <ellipse cx="400" cy="170" rx="110" ry="24" fill="rgba(249,115,22,0.05)" stroke="var(--accent)" stroke-width="1" opacity="0.8"/>
+      <text x="400" y="175" text-anchor="middle" fill="var(--fg)" font-size="11">Browse Restaurants</text>
+
+      <ellipse cx="400" cy="230" rx="105" ry="24" fill="rgba(249,115,22,0.05)" stroke="var(--accent)" stroke-width="1" opacity="0.8"/>
+      <text x="400" y="235" text-anchor="middle" fill="var(--fg)" font-size="11">Place Food Order</text>
+
+      <ellipse cx="400" cy="290" rx="95" ry="24" fill="rgba(249,115,22,0.05)" stroke="var(--accent)" stroke-width="1" opacity="0.8"/>
+      <text x="400" y="295" text-anchor="middle" fill="var(--fg)" font-size="11">Leave Review</text>
+
+      <ellipse cx="400" cy="350" rx="85" ry="24" fill="rgba(249,115,22,0.05)" stroke="var(--accent)" stroke-width="1" opacity="0.8"/>
+      <text x="400" y="355" text-anchor="middle" fill="var(--fg)" font-size="11">Send Message</text>
+
+      <ellipse cx="400" cy="410" rx="90" ry="24" fill="rgba(249,115,22,0.05)" stroke="var(--accent)" stroke-width="1" opacity="0.8"/>
+      <text x="400" y="415" text-anchor="middle" fill="var(--fg)" font-size="11">Manage Profile</text>
+
+      <!-- Driver UCs -->
+      <ellipse cx="640" cy="480" rx="120" ry="24" fill="rgba(34,211,238,0.05)" stroke="var(--cyan)" stroke-width="1" opacity="0.8"/>
+      <text x="640" y="485" text-anchor="middle" fill="var(--fg)" font-size="11">View Unclaimed Orders</text>
+
+      <ellipse cx="640" cy="545" rx="95" ry="24" fill="rgba(34,211,238,0.05)" stroke="var(--cyan)" stroke-width="1" opacity="0.8"/>
+      <text x="640" y="550" text-anchor="middle" fill="var(--fg)" font-size="11">Claim Order</text>
+
+      <ellipse cx="640" cy="610" rx="105" ry="24" fill="rgba(34,211,238,0.05)" stroke="var(--cyan)" stroke-width="1" opacity="0.8"/>
+      <text x="640" y="615" text-anchor="middle" fill="var(--fg)" font-size="11">Mark as Delivered</text>
+
+      <ellipse cx="640" cy="675" rx="105" ry="24" fill="rgba(34,211,238,0.05)" stroke="var(--cyan)" stroke-width="1" opacity="0.8"/>
+      <text x="640" y="680" text-anchor="middle" fill="var(--fg)" font-size="11">Review Customer</text>
+
+      <!-- Restaurant Admin UCs -->
+      <ellipse cx="910" cy="170" rx="90" ry="24" fill="rgba(52,211,153,0.05)" stroke="var(--green)" stroke-width="1" opacity="0.8"/>
+      <text x="910" y="175" text-anchor="middle" fill="var(--fg)" font-size="11">Manage Menu</text>
+
+      <ellipse cx="910" cy="235" rx="115" ry="24" fill="rgba(52,211,153,0.05)" stroke="var(--green)" stroke-width="1" opacity="0.8"/>
+      <text x="910" y="240" text-anchor="middle" fill="var(--fg)" font-size="11">Update Order Status</text>
+
+      <ellipse cx="910" cy="300" rx="95" ry="24" fill="rgba(52,211,153,0.05)" stroke="var(--green)" stroke-width="1" opacity="0.8"/>
+      <text x="910" y="305" text-anchor="middle" fill="var(--fg)" font-size="11">Filter Orders</text>
+
+      <ellipse cx="910" cy="370" rx="85" ry="24" fill="rgba(52,211,153,0.05)" stroke="var(--green)" stroke-width="1" opacity="0.8"/>
+      <text x="910" y="375" text-anchor="middle" fill="var(--fg)" font-size="11">Send Message</text>
+
+      <!-- System Admin UCs -->
+      <ellipse cx="910" cy="570" rx="100" ry="24" fill="rgba(167,139,250,0.05)" stroke="var(--violet)" stroke-width="1" opacity="0.8"/>
+      <text x="910" y="575" text-anchor="middle" fill="var(--fg)" font-size="11">Manage All Users</text>
+
+      <ellipse cx="910" cy="635" rx="100" ry="24" fill="rgba(167,139,250,0.05)" stroke="var(--violet)" stroke-width="1" opacity="0.8"/>
+      <text x="910" y="640" text-anchor="middle" fill="var(--fg)" font-size="11">View All Orders</text>
+
+      <ellipse cx="910" cy="700" rx="115" ry="24" fill="rgba(167,139,250,0.05)" stroke="var(--violet)" stroke-width="1" opacity="0.8"/>
+      <text x="910" y="705" text-anchor="middle" fill="var(--fg)" font-size="11">Filter Users by Role</text>
+
+      <!-- Bonus Points UC -->
+      <ellipse cx="640" cy="760" rx="120" ry="24" fill="rgba(251,191,36,0.06)" stroke="var(--yellow)" stroke-width="1" opacity="0.7"/>
+      <text x="640" y="765" text-anchor="middle" fill="var(--fg)" font-size="11">Receive Bonus Points</text>
+
+      <!-- Dynamic Pricing UC -->
+      <ellipse cx="640" cy="830" rx="120" ry="24" fill="rgba(251,191,36,0.06)" stroke="var(--yellow)" stroke-width="1" opacity="0.7"/>
+      <text x="640" y="835" text-anchor="middle" fill="var(--fg)" font-size="11">Dynamic Pricing Applied</text>
+
+      <!-- === CONNECTIONS === -->
+      <!-- Customer connections -->
+      <line x1="108" y1="175" x2="290" y2="175" stroke="var(--accent)" stroke-width="1" opacity="0.4"/>
+      <line x1="108" y1="195" x2="295" y2="230" stroke="var(--accent)" stroke-width="1" opacity="0.4"/>
+      <line x1="108" y1="210" x2="305" y2="290" stroke="var(--accent)" stroke-width="1" opacity="0.4"/>
+      <line x1="108" y1="220" x2="315" y2="350" stroke="var(--accent)" stroke-width="1" opacity="0.4"/>
+      <line x1="108" y1="230" x2="310" y2="410" stroke="var(--accent)" stroke-width="1" opacity="0.4"/>
+      <line x1="108" y1="185" x2="535" y2="100" stroke="var(--accent)" stroke-width="1" opacity="0.4" stroke-dasharray="4,3"/>
+
+      <!-- Driver connections -->
+      <line x1="108" y1="565" x2="520" y2="480" stroke="var(--cyan)" stroke-width="1" opacity="0.4"/>
+      <line x1="108" y1="575" x2="545" y2="545" stroke="var(--cyan)" stroke-width="1" opacity="0.4"/>
+      <line x1="108" y1="585" x2="535" y2="610" stroke="var(--cyan)" stroke-width="1" opacity="0.4"/>
+      <line x1="108" y1="595" x2="535" y2="675" stroke="var(--cyan)" stroke-width="1" opacity="0.4"/>
+      <line x1="108" y1="550" x2="535" y2="100" stroke="var(--cyan)" stroke-width="1" opacity="0.4" stroke-dasharray="4,3"/>
+
+      <!-- Restaurant Admin connections -->
+      <line x1="1172" y1="230" x2="1000" y2="175" stroke="var(--green)" stroke-width="1" opacity="0.4"/>
+      <line x1="1172" y1="245" x2="1025" y2="240" stroke="var(--green)" stroke-width="1" opacity="0.4"/>
+      <line x1="1172" y1="260" x2="1005" y2="300" stroke="var(--green)" stroke-width="1" opacity="0.4"/>
+      <line x1="1172" y1="275" x2="995" y2="370" stroke="var(--green)" stroke-width="1" opacity="0.4"/>
+      <line x1="1172" y1="220" x2="745" y2="100" stroke="var(--green)" stroke-width="1" opacity="0.4" stroke-dasharray="4,3"/>
+
+      <!-- System Admin connections -->
+      <line x1="1172" y1="630" x2="1010" y2="575" stroke="var(--violet)" stroke-width="1" opacity="0.4"/>
+      <line x1="1172" y1="645" x2="1010" y2="640" stroke="var(--violet)" stroke-width="1" opacity="0.4"/>
+      <line x1="1172" y1="660" x2="1025" y2="700" stroke="var(--violet)" stroke-width="1" opacity="0.4"/>
+
+      <!-- «include» relationships -->
+      <line x1="400" y1="254" x2="575" y2="115" stroke="var(--yellow)" stroke-width="1" stroke-dasharray="6,3" opacity="0.6"/>
+      <text x="470" y="178" fill="var(--yellow)" font-size="9" font-style="italic" transform="rotate(-18,470,178)">«include»</text>
+
+      <line x1="640" y1="610" x2="640" y2="504" stroke="var(--yellow)" stroke-width="1" stroke-dasharray="6,3" opacity="0.6"/>
+      <text x="650" y="558" fill="var(--yellow)" font-size="9" font-style="italic">«include»</text>
+
+      <line x1="400" y1="314" x2="560" y2="595" stroke="var(--yellow)" stroke-width="1" stroke-dasharray="6,3" opacity="0.6"/>
+      <text x="460" y="468" fill="var(--yellow)" font-size="9" font-style="italic" transform="rotate(42,460,468)">«include»</text>
+
+      <!-- «extend» -->
+      <line x1="640" y1="736" x2="640" y2="634" stroke="var(--yellow)" stroke-width="1" stroke-dasharray="3,4" opacity="0.5"/>
+      <text x="652" y="690" fill="var(--yellow)" font-size="9" font-style="italic">«extend»</text>
+
+      <line x1="640" y1="806" x2="640" y2="254" stroke="var(--yellow)" stroke-width="1" stroke-dasharray="3,4" opacity="0.5"/>
+      <text x="652" y="540" fill="var(--yellow)" font-size="9" font-style="italic">«extend»</text>
+
+    </svg>
+  </div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div>Customer Use Cases</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--cyan)"></div>Driver Use Cases</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>Restaurant Admin Use Cases</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--violet)"></div>System Admin Use Cases</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--yellow)"></div>«include» / «extend»</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--muted);border:1px dashed var(--muted)"></div>Associations</div>
+  </div>
+</div>
+
+<!-- ============ DIAGRAM 2: ER DIAGRAM ============ -->
+<div class="diagram-wrap" id="dw1">
+  <div class="diagram-header">
+    <h2>Entity-Relationship Diagram — Data Model</h2>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <span class="badge">ER / Crow's Foot</span>
+      <div class="zoom-controls">
+        <button class="zoom-btn" onclick="zoom(1,-0.1)"><i class="fa-solid fa-minus"></i></button>
+        <button class="zoom-btn" onclick="zoom(1,0)"><i class="fa-solid fa-expand"></i></button>
+        <button class="zoom-btn" onclick="zoom(1,0.1)"><i class="fa-solid fa-plus"></i></button>
+      </div>
+    </div>
+  </div>
+  <div class="diagram-scroll">
+    <svg id="svg1" viewBox="0 0 1350 1020" style="min-width:1000px;">
+      <defs>
+        <filter id="glow2"><feGaussianBlur stdDeviation="2" result="g"/><feMerge><feMergeNode in="g"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      </defs>
+      <pattern id="grid2" width="40" height="40" patternUnits="userSpaceOnUse">
+        <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.015)" stroke-width="0.5"/>
+      </pattern>
+      <rect width="1350" height="1020" fill="url(#grid2)"/>
+
+      <!-- USERS entity (root) -->
+      <g transform="translate(530,20)">
+        <rect width="250" height="155" rx="6" fill="rgba(249,115,22,0.07)" stroke="var(--accent)" stroke-width="2"/>
+        <rect width="250" height="30" rx="6" fill="var(--accent)" opacity="0.9"/>
+        <rect x="0" y="24" width="250" height="6" fill="var(--accent)" opacity="0.9"/>
+        <text x="125" y="21" text-anchor="middle" fill="#fff" font-size="13" font-weight="700">USERS</text>
+        <text x="12" y="50" fill="var(--yellow)" font-size="10" class="mono">PK  id : BIGINT</text>
+        <text x="12" y="66" fill="var(--fg)" font-size="10" class="mono">    username : VARCHAR</text>
+        <text x="12" y="82" fill="var(--fg)" font-size="10" class="mono">    password : VARCHAR</text>
+        <text x="12" y="98" fill="var(--fg)" font-size="10" class="mono">    email : VARCHAR</text>
+        <text x="12" y="114" fill="var(--fg)" font-size="10" class="mono">    phone_num : VARCHAR</text>
+        <text x="12" y="130" fill="var(--fg)" font-size="10" class="mono">    is_admin : BOOLEAN</text>
+        <text x="12" y="146" fill="var(--fg)" font-size="10" class="mono">    is_active : BOOLEAN</text>
+      </g>
+
+      <!-- Inheritance triangle -->
+      <polygon points="655,175 635,205 675,205" fill="var(--card)" stroke="var(--accent)" stroke-width="1.5"/>
+      <line x1="655" y1="205" x2="655" y2="220" stroke="var(--accent)" stroke-width="1.5"/>
+      <line x1="240" y1="220" x2="1100" y2="220" stroke="var(--accent)" stroke-width="1.5"/>
+      <line x1="240" y1="220" x2="240" y2="240" stroke="var(--accent)" stroke-width="1.5"/>
+      <line x1="555" y1="220" x2="555" y2="240" stroke="var(--accent)" stroke-width="1.5"/>
+      <line x1="1100" y1="220" x2="1100" y2="240" stroke="var(--accent)" stroke-width="1.5"/>
+
+      <!-- CLIENTS -->
+      <g transform="translate(140,240)">
+        <rect width="200" height="95" rx="6" fill="rgba(251,113,133,0.06)" stroke="var(--rose)" stroke-width="1.5"/>
+        <rect width="200" height="28" rx="6" fill="var(--rose)" opacity="0.8"/>
+        <rect x="0" y="22" width="200" height="6" fill="var(--rose)" opacity="0.8"/>
+        <text x="100" y="20" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">CLIENTS</text>
+        <text x="10" y="46" fill="var(--yellow)" font-size="10" class="mono">PK  user_id : BIGINT</text>
+        <text x="10" y="62" fill="var(--fg)" font-size="10" class="mono">FK  → users.id</text>
+        <text x="10" y="80" fill="var(--fg)" font-size="10" class="mono">    bonus_points : INT</text>
+        <text x="10" y="92" fill="var(--fg)" font-size="10" class="mono">    balance : DOUBLE</text>
+      </g>
+
+      <!-- DRIVERS -->
+      <g transform="translate(455,240)">
+        <rect width="200" height="95" rx="6" fill="rgba(34,211,238,0.06)" stroke="var(--cyan)" stroke-width="1.5"/>
+        <rect width="200" height="28" rx="6" fill="var(--cyan)" opacity="0.8"/>
+        <rect x="0" y="22" width="200" height="6" fill="var(--cyan)" opacity="0.8"/>
+        <text x="100" y="20" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">DRIVERS</text>
+        <text x="10" y="46" fill="var(--yellow)" font-size="10" class="mono">PK  user_id : BIGINT</text>
+        <text x="10" y="62" fill="var(--fg)" font-size="10" class="mono">FK  → users.id</text>
+        <text x="10" y="80" fill="var(--fg)" font-size="10" class="mono">    vehicle_type : ENUM</text>
+        <text x="10" y="92" fill="var(--fg)" font-size="10" class="mono">    is_available : BOOLEAN</text>
+      </g>
+
+      <!-- RESTAURANTS -->
+      <g transform="translate(1000,240)">
+        <rect width="230" height="108" rx="6" fill="rgba(52,211,153,0.06)" stroke="var(--green)" stroke-width="1.5"/>
+        <rect width="230" height="28" rx="6" fill="var(--green)" opacity="0.8"/>
+        <rect x="0" y="22" width="230" height="6" fill="var(--green)" opacity="0.8"/>
+        <text x="115" y="20" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">RESTAURANTS</text>
+        <text x="10" y="46" fill="var(--yellow)" font-size="10" class="mono">PK  user_id : BIGINT</text>
+        <text x="10" y="62" fill="var(--fg)" font-size="10" class="mono">FK  → users.id</text>
+        <text x="10" y="80" fill="var(--fg)" font-size="10" class="mono">    cuisine_type : STRING</text>
+        <text x="10" y="96" fill="var(--fg)" font-size="10" class="mono">    opening_time : TIME</text>
+      </g>
+
+      <!-- FOOD_ORDERS -->
+      <g transform="translate(400,400)">
+        <rect width="280" height="155" rx="6" fill="rgba(251,191,36,0.06)" stroke="var(--yellow)" stroke-width="1.5"/>
+        <rect width="280" height="28" rx="6" fill="var(--yellow)" opacity="0.85"/>
+        <rect x="0" y="22" width="280" height="6" fill="var(--yellow)" opacity="0.85"/>
+        <text x="140" y="20" text-anchor="middle" fill="#1a1b23" font-size="12" font-weight="700">FOOD_ORDERS</text>
+        <text x="10" y="46" fill="var(--yellow)" font-size="10" class="mono">PK  id : BIGINT</text>
+        <text x="10" y="62" fill="var(--cyan)" font-size="10" class="mono">FK  buyer_id → clients.user_id</text>
+        <text x="10" y="78" fill="var(--cyan)" font-size="10" class="mono">FK  restaurant_id → restaurants</text>
+        <text x="10" y="94" fill="var(--cyan)" font-size="10" class="mono">FK  delivery_person_id → drivers</text>
+        <text x="10" y="110" fill="var(--fg)" font-size="10" class="mono">    total_price : DECIMAL</text>
+        <text x="10" y="126" fill="var(--fg)" font-size="10" class="mono">    status : ENUM(OrderStatus)</text>
+        <text x="10" y="142" fill="var(--fg)" font-size="10" class="mono">    created_at, delivered_at</text>
+      </g>
+
+      <!-- ORDER_ITEMS -->
+      <g transform="translate(170,630)">
+        <rect width="240" height="100" rx="6" fill="rgba(96,165,250,0.06)" stroke="var(--blue)" stroke-width="1.5"/>
+        <rect width="240" height="28" rx="6" fill="var(--blue)" opacity="0.8"/>
+        <rect x="0" y="22" width="240" height="6" fill="var(--blue)" opacity="0.8"/>
+        <text x="120" y="20" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">ORDER_ITEMS</text>
+        <text x="10" y="46" fill="var(--yellow)" font-size="10" class="mono">PK  id : BIGINT</text>
+        <text x="10" y="62" fill="var(--cyan)" font-size="10" class="mono">FK  order_id → food_orders.id</text>
+        <text x="10" y="78" fill="var(--cyan)" font-size="10" class="mono">FK  dish_id → dishes.id</text>
+        <text x="10" y="94" fill="var(--fg)" font-size="10" class="mono">    quantity : INT, item_price : DBL</text>
+      </g>
+
+      <!-- DISHES -->
+      <g transform="translate(770,630)">
+        <rect width="240" height="108" rx="6" fill="rgba(167,139,250,0.06)" stroke="var(--violet)" stroke-width="1.5"/>
+        <rect width="240" height="28" rx="6" fill="var(--violet)" opacity="0.8"/>
+        <rect x="0" y="22" width="240" height="6" fill="var(--violet)" opacity="0.8"/>
+        <text x="120" y="20" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">DISHES</text>
+        <text x="10" y="46" fill="var(--yellow)" font-size="10" class="mono">PK  id : BIGINT</text>
+        <text x="10" y="62" fill="var(--cyan)" font-size="10" class="mono">FK  restaurant_id → restaurants</text>
+        <text x="10" y="78" fill="var(--fg)" font-size="10" class="mono">    title : VARCHAR</text>
+        <text x="10" y="94" fill="var(--fg)" font-size="10" class="mono">    price : FLOAT</text>
+        <text x="10" y="104" fill="var(--fg)" font-size="10" class="mono">    is_available : BOOLEAN</text>
+      </g>
+
+      <!-- DISH_CATEGORIES -->
+      <g transform="translate(1100,640)">
+        <rect width="200" height="80" rx="6" fill="rgba(167,139,250,0.04)" stroke="var(--violet)" stroke-width="1" stroke-dasharray="4,3"/>
+        <rect width="200" height="26" rx="6" fill="var(--violet)" opacity="0.5"/>
+        <rect x="0" y="20" width="200" height="6" fill="var(--violet)" opacity="0.5"/>
+        <text x="100" y="18" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">DISH_CATEGORIES</text>
+        <text x="10" y="42" fill="var(--yellow)" font-size="10" class="mono">PK  id : BIGINT</text>
+        <text x="10" y="58" fill="var(--fg)" font-size="10" class="mono">    name : VARCHAR</text>
+        <text x="10" y="72" fill="var(--muted)" font-size="9" class="mono">// starter, main, dessert...</text>
+      </g>
+
+      <!-- REVIEWS -->
+      <g transform="translate(30,820)">
+        <rect width="220" height="100" rx="6" fill="rgba(251,113,133,0.05)" stroke="var(--rose)" stroke-width="1.2"/>
+        <rect width="220" height="26" rx="6" fill="var(--rose)" opacity="0.6"/>
+        <rect x="0" y="20" width="220" height="6" fill="var(--rose)" opacity="0.6"/>
+        <text x="110" y="18" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">REVIEWS</text>
+        <text x="10" y="42" fill="var(--yellow)" font-size="10" class="mono">PK  id : BIGINT</text>
+        <text x="10" y="56" fill="var(--cyan)" font-size="10" class="mono">FK  client_id, restaurant_id</text>
+        <text x="10" y="72" fill="var(--fg)" font-size="10" class="mono">    rating : INT</text>
+        <text x="10" y="88" fill="var(--fg)" font-size="10" class="mono">    comment : TEXT</text>
+      </g>
+
+      <!-- MESSAGES -->
+      <g transform="translate(400,830)">
+        <rect width="240" height="90" rx="6" fill="rgba(251,191,36,0.04)" stroke="var(--yellow)" stroke-width="1.2"/>
+        <rect width="240" height="26" rx="6" fill="var(--yellow)" opacity="0.5"/>
+        <rect x="0" y="20" width="240" height="6" fill="var(--yellow)" opacity="0.5"/>
+        <text x="120" y="18" text-anchor="middle" fill="#1a1b23" font-size="11" font-weight="600">MESSAGES</text>
+        <text x="10" y="42" fill="var(--yellow)" font-size="10" class="mono">PK  id : BIGINT</text>
+        <text x="10" y="56" fill="var(--cyan)" font-size="10" class="mono">FK  order_id → food_orders</text>
+        <text x="10" y="72" fill="var(--fg)" font-size="10" class="mono">    content : TEXT</text>
+        <text x="10" y="84" fill="var(--fg)" font-size="10" class="mono">    sender_role : STRING</text>
+      </g>
+
+      <!-- OrderStatus enum box -->
+      <g transform="translate(780,830)">
+        <rect width="200" height="90" rx="6" fill="rgba(251,191,36,0.04)" stroke="var(--yellow)" stroke-width="1" stroke-dasharray="4,3"/>
+        <rect width="200" height="24" rx="6" fill="var(--yellow)" opacity="0.4"/>
+        <rect x="0" y="18" width="200" height="6" fill="var(--yellow)" opacity="0.4"/>
+        <text x="100" y="17" text-anchor="middle" fill="#1a1b23" font-size="10" font-weight="600">«enumeration» OrderStatus</text>
+        <text x="10" y="40" fill="var(--fg)" font-size="9" class="mono">PENDING</text>
+        <text x="10" y="52" fill="var(--fg)" font-size="9" class="mono">CONFIRMED</text>
+        <text x="10" y="64" fill="var(--fg)" font-size="9" class="mono">IN_DELIVERY</text>
+        <text x="10" y="76" fill="var(--fg)" font-size="9" class="mono">DELIVERED</text>
+        <text x="10" y="88" fill="var(--fg)" font-size="9" class="mono">CANCELLED</text>
+      </g>
+
+      <!-- === RELATIONSHIP LINES === -->
+      <!-- Client 1—N FoodOrders -->
+      <line x1="240" y1="335" x2="400" y2="460" stroke="var(--rose)" stroke-width="1.2" opacity="0.6"/>
+      <text x="295" y="388" fill="var(--rose)" font-size="10" font-weight="600">1</text>
+      <text x="395" y="455" fill="var(--rose)" font-size="10" font-weight="600">N</text>
+
+      <!-- Restaurant 1—N FoodOrders -->
+      <line x1="1115" y1="348" x2="680" y2="460" stroke="var(--green)" stroke-width="1.2" opacity="0.6"/>
+      <text x="1100" y="355" fill="var(--green)" font-size="10" font-weight="600">1</text>
+      <text x="675" y="455" fill="var(--green)" font-size="10" font-weight="600">N</text>
+
+      <!-- Driver 0..N — FoodOrders -->
+      <line x1="555" y1="335" x2="555" y2="400" stroke="var(--cyan)" stroke-width="1.2" opacity="0.6"/>
+      <text x="540" y="350" fill="var(--cyan)" font-size="10" font-weight="600">0..N</text>
+      <text x="540" y="398" fill="var(--cyan)" font-size="10" font-weight="600">0..1</text>
+
+      <!-- FoodOrder 1—N OrderItems -->
+      <line x1="480" y1="555" x2="340" y2="630" stroke="var(--yellow)" stroke-width="1.2" opacity="0.6"/>
+      <text x="475" y="568" fill="var(--yellow)" font-size="10" font-weight="600">1</text>
+      <text x="335" y="628" fill="var(--yellow)" font-size="10" font-weight="600">N</text>
+
+      <!-- Dish 1—N OrderItems -->
+      <line x1="770" y1="670" x2="410" y2="670" stroke="var(--blue)" stroke-width="1.2" opacity="0.6"/>
+      <text x="760" y="665" fill="var(--blue)" font-size="10" font-weight="600">1</text>
+      <text x="415" y="665" fill="var(--blue)" font-size="10" font-weight="600">N</text>
+
+      <!-- Restaurant 1—N Dishes -->
+      <line x1="1115" y1="348" x2="950" y2="630" stroke="var(--green)" stroke-width="1.2" opacity="0.5"/>
+      <text x="1105" y="380" fill="var(--green)" font-size="10" font-weight="600">1</text>
+      <text x="945" y="625" fill="var(--green)" font-size="10" font-weight="600">N</text>
+
+      <!-- DishCategory 1—N Dishes -->
+      <line x1="1100" y1="680" x2="1010" y2="680" stroke="var(--violet)" stroke-width="1" opacity="0.5" stroke-dasharray="4,3"/>
+      <text x="1090" y="675" fill="var(--violet)" font-size="9" font-weight="600">1</text>
+      <text x="1015" y="675" fill="var(--violet)" font-size="9" font-weight="600">N</text>
+
+      <!-- FoodOrder 1—N Messages -->
+      <line x1="520" y1="555" x2="520" y2="830" stroke="var(--yellow)" stroke-width="1" opacity="0.4" stroke-dasharray="4,3"/>
+      <text x="525" y="568" fill="var(--yellow)" font-size="9" font-weight="600">1</text>
+      <text x="525" y="825" fill="var(--yellow)" font-size="9" font-weight="600">N</text>
+
+      <!-- Client 1—N Reviews -->
+      <line x1="180" y1="335" x2="140" y2="820" stroke="var(--rose)" stroke-width="1" opacity="0.4" stroke-dasharray="4,3"/>
+      <text x="155" y="350" fill="var(--rose)" font-size="9" font-weight="600">1</text>
+      <text x="125" y="815" fill="var(--rose)" font-size="9" font-weight="600">N</text>
+
+      <!-- Restaurant 1—N Reviews -->
+      <line x1="1000" y1="348" x2="250" y2="860" stroke="var(--green)" stroke-width="1" opacity="0.3" stroke-dasharray="4,3"/>
+      <text x="990" y="360" fill="var(--green)" font-size="9" font-weight="600">1</text>
+      <text x="245" y="855" fill="var(--green)" font-size="9" font-weight="600">N</text>
+
+    </svg>
+  </div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--yellow)"></div>PK Primary Key</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--cyan)"></div>FK Foreign Key</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div>Inheritance (JOINED)</div>
+    <div class="legend-item"><div class="legend-dot" style="border:1px dashed var(--muted);background:transparent"></div>Weak / Optional Relation</div>
+    <div class="legend-item"><span style="font-size:11px;font-weight:700;color:var(--fg)">1  N</span> Cardinality</div>
+  </div>
+</div>
+
+<!-- ============ DIAGRAM 3: CLASS DIAGRAM ============ -->
+<div class="diagram-wrap" id="dw2">
+  <div class="diagram-header">
+    <h2>UML Class Diagram — JPA Entity Hierarchy</h2>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <span class="badge">UML Classes</span>
+      <div class="zoom-controls">
+        <button class="zoom-btn" onclick="zoom(2,-0.1)"><i class="fa-solid fa-minus"></i></button>
+        <button class="zoom-btn" onclick="zoom(2,0)"><i class="fa-solid fa-expand"></i></button>
+        <button class="zoom-btn" onclick="zoom(2,0.1)"><i class="fa-solid fa-plus"></i></button>
+      </div>
+    </div>
+  </div>
+  <div class="diagram-scroll">
+    <svg id="svg2" viewBox="0 0 1380 1050" style="min-width:1050px;">
+      <pattern id="grid3" width="40" height="40" patternUnits="userSpaceOnUse">
+        <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.015)" stroke-width="0.5"/>
+      </pattern>
+      <rect width="1380" height="1050" fill="url(#grid3)"/>
+
+      <!-- User (abstract) -->
+      <g transform="translate(490,10)">
+        <rect width="280" height="175" rx="5" fill="rgba(249,115,22,0.06)" stroke="var(--accent)" stroke-width="2"/>
+        <rect width="280" height="32" rx="5" fill="var(--accent)" opacity="0.85"/>
+        <rect x="0" y="26" width="280" height="6" fill="var(--accent)" opacity="0.85"/>
+        <text x="140" y="14" text-anchor="middle" fill="rgba(255,255,255,0.7)" font-size="9" font-style="italic">«abstract, @Entity»</text>
+        <text x="140" y="28" text-anchor="middle" fill="#fff" font-size="13" font-weight="700" font-style="italic">User</text>
+        <line x1="0" y1="70" x2="280" y2="70" stroke="var(--border)" stroke-width="0.5"/>
+        <text x="10" y="48" fill="var(--muted)" font-size="9" class="mono">- id : Long</text>
+        <text x="10" y="60" fill="var(--muted)" font-size="9" class="mono">- username, password, email : String</text>
+        <text x="10" y="72" fill="var(--muted)" font-size="9" class="mono">- phoneNum : String</text>
+        <text x="10" y="84" fill="var(--muted)" font-size="9" class="mono">- isAdmin : boolean</text>
+        <text x="10" y="96" fill="var(--muted)" font-size="9" class="mono">- isActive : boolean</text>
+        <text x="10" y="108" fill="var(--muted)" font-size="9" class="mono">- dateCreated : LocalDateTime</text>
+        <text x="10" y="126" fill="var(--green)" font-size="9" class="mono">+ getters / setters (Lombok)</text>
+        <text x="10" y="138" fill="var(--green)" font-size="9" class="mono">+ @Builder</text>
+        <text x="10" y="150" fill="var(--muted)" font-size="8" font-style="italic">@Inheritance(JOINED)</text>
+        <text x="10" y="162" fill="var(--muted)" font-size="8" font-style="italic">@DiscriminatorColumn</text>
+      </g>
+
+      <!-- Inheritance arrow -->
+      <line x1="630" y1="185" x2="630" y2="215" stroke="var(--accent)" stroke-width="1.5"/>
+      <polygon points="630,185 620,200 640,200" fill="var(--card)" stroke="var(--accent)" stroke-width="1.5"/>
+      <line x1="200" y1="215" x2="1160" y2="215" stroke="var(--accent)" stroke-width="1.5"/>
+      <line x1="200" y1="215" x2="200" y2="230" stroke="var(--accent)" stroke-width="1.5"/>
+      <line x1="580" y1="215" x2="580" y2="230" stroke="var(--accent)" stroke-width="1.5"/>
+      <line x1="1160" y1="215" x2="1160" y2="230" stroke="var(--accent)" stroke-width="1.5"/>
+
+      <!-- Client -->
+      <g transform="translate(95,230)">
+        <rect width="210" height="110" rx="5" fill="rgba(251,113,133,0.06)" stroke="var(--rose)" stroke-width="1.5"/>
+        <rect width="210" height="26" rx="5" fill="var(--rose)" opacity="0.75"/>
+        <rect x="0" y="20" width="210" height="6" fill="var(--rose)" opacity="0.75"/>
+        <text x="105" y="18" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">Client</text>
+        <line x1="0" y1="58" x2="210" y2="58" stroke="var(--border)" stroke-width="0.5"/>
+        <text x="10" y="42" fill="var(--muted)" font-size="9" class="mono">- bonusPoints : int</text>
+        <text x="10" y="54" fill="var(--muted)" font-size="9" class="mono">- balance : double</text>
+        <text x="10" y="72" fill="var(--green)" font-size="9" class="mono">+ orders : List&lt;FoodOrder&gt;</text>
+        <text x="10" y="84" fill="var(--green)" font-size="9" class="mono">+ reviews : List&lt;Review&gt;</text>
+        <text x="10" y="100" fill="var(--muted)" font-size="8" font-style="italic">@OneToMany(mappedBy="buyer")</text>
+      </g>
+
+      <!-- Driver -->
+      <g transform="translate(475,230)">
+        <rect width="210" height="110" rx="5" fill="rgba(34,211,238,0.06)" stroke="var(--cyan)" stroke-width="1.5"/>
+        <rect width="210" height="26" rx="5" fill="var(--cyan)" opacity="0.75"/>
+        <rect x="0" y="20" width="210" height="6" fill="var(--cyan)" opacity="0.75"/>
+        <text x="105" y="18" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">Driver</text>
+        <line x1="0" y1="58" x2="210" y2="58" stroke="var(--border)" stroke-width="0.5"/>
+        <text x="10" y="42" fill="var(--muted)" font-size="9" class="mono">- vehicleType : VehicleType</text>
+        <text x="10" y="54" fill="var(--muted)" font-size="9" class="mono">- isAvailable : boolean</text>
+        <text x="10" y="72" fill="var(--green)" font-size="9" class="mono">+ deliveries : List&lt;FoodOrder&gt;</text>
+        <text x="10" y="100" fill="var(--muted)" font-size="8" font-style="italic">@OneToMany(mappedBy="deliveryPerson")</text>
+      </g>
+
+      <!-- Restaurant -->
+      <g transform="translate(1040,230)">
+        <rect width="230" height="120" rx="5" fill="rgba(52,211,153,0.06)" stroke="var(--green)" stroke-width="1.5"/>
+        <rect width="230" height="26" rx="5" fill="var(--green)" opacity="0.75"/>
+        <rect x="0" y="20" width="230" height="6" fill="var(--green)" opacity="0.75"/>
+        <text x="115" y="18" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">Restaurant</text>
+        <line x1="0" y1="62" x2="230" y2="62" stroke="var(--border)" stroke-width="0.5"/>
+        <text x="10" y="42" fill="var(--muted)" font-size="9" class="mono">- cuisineType : String</text>
+        <text x="10" y="54" fill="var(--muted)" font-size="9" class="mono">- openingTime : LocalTime</text>
+        <text x="10" y="74" fill="var(--green)" font-size="9" class="mono">+ dishes : List&lt;Dish&gt;</text>
+        <text x="10" y="86" fill="var(--green)" font-size="9" class="mono">+ orders : List&lt;FoodOrder&gt;</text>
+        <text x="10" y="108" fill="var(--muted)" font-size="8" font-style="italic">@OneToMany(mappedBy="restaurant")</text>
+      </g>
+
+      <!-- FoodOrder -->
+      <g transform="translate(380,410)">
+        <rect width="340" height="175" rx="5" fill="rgba(251,191,36,0.06)" stroke="var(--yellow)" stroke-width="1.5"/>
+        <rect width="340" height="26" rx="5" fill="var(--yellow)" opacity="0.8"/>
+        <rect x="0" y="20" width="340" height="6" fill="var(--yellow)" opacity="0.8"/>
+        <text x="170" y="18" text-anchor="middle" fill="#1a1b23" font-size="11" font-weight="700">FoodOrder</text>
+        <line x1="0" y1="100" x2="340" y2="100" stroke="var(--border)" stroke-width="0.5"/>
+        <text x="10" y="42" fill="var(--muted)" font-size="9" class="mono">- totalPrice : BigDecimal</text>
+        <text x="10" y="54" fill="var(--muted)" font-size="9" class="mono">- deliveryFee : BigDecimal</text>
+        <text x="10" y="66" fill="var(--muted)" font-size="9" class="mono">- status : OrderStatus</text>
+        <text x="10" y="78" fill="var(--muted)" font-size="9" class="mono">- paymentMethod : String</text>
+        <text x="10" y="90" fill="var(--muted)" font-size="9" class="mono">- specialInstructions : String</text>
+        <text x="10" y="96" fill="var(--muted)" font-size="8" class="mono">- createdAt, deliveredAt : LocalDateTime</text>
+        <text x="10" y="116" fill="var(--green)" font-size="9" class="mono">+ buyer : Client  @ManyToOne</text>
+        <text x="10" y="128" fill="var(--green)" font-size="9" class="mono">+ restaurant : Restaurant  @ManyToOne</text>
+        <text x="10" y="140" fill="var(--green)" font-size="9" class="mono">+ deliveryPerson : Driver  @ManyToOne</text>
+        <text x="10" y="152" fill="var(--green)" font-size="9" class="mono">+ items : List&lt;OrderItem&gt;  @OneToMany</text>
+        <text x="10" y="164" fill="var(--green)" font-size="9" class="mono">+ messages : List&lt;Message&gt;  @OneToMany</text>
+      </g>
+
+      <!-- OrderItem -->
+      <g transform="translate(120,650)">
+        <rect width="230" height="105" rx="5" fill="rgba(96,165,250,0.06)" stroke="var(--blue)" stroke-width="1.5"/>
+        <rect width="230" height="26" rx="5" fill="var(--blue)" opacity="0.75"/>
+        <rect x="0" y="20" width="230" height="6" fill="var(--blue)" opacity="0.75"/>
+        <text x="115" y="18" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">OrderItem</text>
+        <line x1="0" y1="58" x2="230" y2="58" stroke="var(--border)" stroke-width="0.5"/>
+        <text x="10" y="42" fill="var(--muted)" font-size="9" class="mono">- quantity : int</text>
+        <text x="10" y="54" fill="var(--muted)" font-size="9" class="mono">- itemPrice : double</text>
+        <text x="10" y="72" fill="var(--green)" font-size="9" class="mono">+ order : FoodOrder  @ManyToOne</text>
+        <text x="10" y="84" fill="var(--green)" font-size="9" class="mono">+ dish : Dish  @ManyToOne</text>
+        <text x="10" y="100" fill="var(--muted)" font-size="8" font-style="italic">Junction entity (stores price snapshot)</text>
+      </g>
+
+      <!-- Dish -->
+      <g transform="translate(780,650)">
+        <rect width="250" height="120" rx="5" fill="rgba(167,139,250,0.06)" stroke="var(--violet)" stroke-width="1.5"/>
+        <rect width="250" height="26" rx="5" fill="var(--violet)" opacity="0.75"/>
+        <rect x="0" y="20" width="250" height="6" fill="var(--violet)" opacity="0.75"/>
+        <text x="125" y="18" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">Dish</text>
+        <line x1="0" y1="70" x2="250" y2="70" stroke="var(--border)" stroke-width="0.5"/>
+        <text x="10" y="42" fill="var(--muted)" font-size="9" class="mono">- title : String</text>
+        <text x="10" y="54" fill="var(--muted)" font-size="9" class="mono">- price : float</text>
+        <text x="10" y="66" fill="var(--muted)" font-size="9" class="mono">- isAvailable : boolean</text>
+        <text x="10" y="84" fill="var(--green)" font-size="9" class="mono">+ restaurant : Restaurant  @ManyToOne</text>
+        <text x="10" y="96" fill="var(--green)" font-size="9" class="mono">+ category : DishCategory  @ManyToOne</text>
+        <text x="10" y="114" fill="var(--muted)" font-size="8" font-style="italic">@Enumerated(EnumType.STRING)</text>
+      </g>
+
+      <!-- Review -->
+      <g transform="translate(30,810)">
+        <rect width="220" height="105" rx="5" fill="rgba(251,113,133,0.04)" stroke="var(--rose)" stroke-width="1.2"/>
+        <rect width="220" height="24" rx="5" fill="var(--rose)" opacity="0.55"/>
+        <rect x="0" y="18" width="220" height="6" fill="var(--rose)" opacity="0.55"/>
+        <text x="110" y="16" text-anchor="middle" fill="#fff" font-size="10" font-weight="600">Review</text>
+        <line x1="0" y1="56" x2="220" y2="56" stroke="var(--border)" stroke-width="0.5"/>
+        <text x="10" y="38" fill="var(--muted)" font-size="9" class="mono">- rating : int</text>
+        <text x="10" y="50" fill="var(--muted)" font-size="9" class="mono">- comment : String</text>
+        <text x="10" y="70" fill="var(--green)" font-size="9" class="mono">+ reviewedClient : Client</text>
+        <text x="10" y="82" fill="var(--green)" font-size="9" class="mono">+ reviewedRestaurant : Restaurant</text>
+        <text x="10" y="98" fill="var(--muted)" font-size="8" font-style="italic">Created after DELIVERED status</text>
+      </g>
+
+      <!-- Message -->
+      <g transform="translate(380,820)">
+        <rect width="230" height="90" rx="5" fill="rgba(251,191,36,0.04)" stroke="var(--yellow)" stroke-width="1.2"/>
+        <rect width="230" height="24" rx="5" fill="var(--yellow)" opacity="0.45"/>
+        <rect x="0" y="18" width="230" height="6" fill="var(--yellow)" opacity="0.45"/>
+        <text x="115" y="16" text-anchor="middle" fill="#1a1b23" font-size="10" font-weight="600">Message</text>
+        <line x1="0" y1="52" x2="230" y2="52" stroke="var(--border)" stroke-width="0.5"/>
+        <text x="10" y="38" fill="var(--muted)" font-size="9" class="mono">- content : String</text>
+        <text x="10" y="50" fill="var(--muted)" font-size="9" class="mono">- senderRole : String</text>
+        <text x="10" y="66" fill="var(--green)" font-size="9" class="mono">+ order : FoodOrder  @ManyToOne</text>
+        <text x="10" y="80" fill="var(--muted)" font-size="8" font-style="italic">In-order messaging</text>
+      </g>
+
+      <!-- Enums -->
+      <g transform="translate(780,820)">
+        <rect width="170" height="95" rx="5" fill="none" stroke="var(--green)" stroke-width="1" stroke-dasharray="4,3"/>
+        <rect width="170" height="20" rx="5" fill="var(--green)" opacity="0.35"/>
+        <text x="85" y="14" text-anchor="middle" fill="#fff" font-size="9" font-weight="600">«enum» VehicleType</text>
+        <text x="10" y="36" fill="var(--fg)" font-size="8" class="mono">BICYCLE</text>
+        <text x="10" y="48" fill="var(--fg)" font-size="8" class="mono">MOTORBIKE</text>
+        <text x="10" y="60" fill="var(--fg)" font-size="8" class="mono">CAR</text>
+      </g>
+      <g transform="translate(990,820)">
+        <rect width="170" height="120" rx="5" fill="none" stroke="var(--yellow)" stroke-width="1" stroke-dasharray="4,3"/>
+        <rect width="170" height="20" rx="5" fill="var(--yellow)" opacity="0.35"/>
+        <text x="85" y="14" text-anchor="middle" fill="#1a1b23" font-size="9" font-weight="600">«enum» OrderStatus</text>
+        <text x="10" y="36" fill="var(--fg)" font-size="8" class="mono">PENDING</text>
+        <text x="10" y="48" fill="var(--fg)" font-size="8" class="mono">CONFIRMED</text>
+        <text x="10" y="60" fill="var(--fg)" font-size="8" class="mono">IN_DELIVERY</text>
+        <text x="10" y="72" fill="var(--fg)" font-size="8" class="mono">DELIVERED</text>
+        <text x="10" y="84" fill="var(--fg)" font-size="8" class="mono">CANCELLED</text>
+      </g>
+
+      <!-- Association lines -->
+      <!-- Client → FoodOrder -->
+      <line x1="200" y1="340" x2="380" y2="460" stroke="var(--rose)" stroke-width="1" opacity="0.5"/>
+      <text x="265" y="395" fill="var(--rose)" font-size="9" font-weight="600">1     *</text>
+
+      <!-- FoodOrder → OrderItem -->
+      <line x1="460" y1="585" x2="300" y2="650" stroke="var(--yellow)" stroke-width="1" opacity="0.5"/>
+      <text x="355" y="610" fill="var(--yellow)" font-size="9" font-weight="600">1     *</text>
+
+      <!-- Dish → OrderItem -->
+      <line x1="780" y1="700" x2="350" y2="700" stroke="var(--blue)" stroke-width="1" opacity="0.5"/>
+      <text x="770" y="695" fill="var(--blue)" font-size="9" font-weight="600">1     *</text>
+
+      <!-- Restaurant → FoodOrder -->
+      <line x1="1100" y1="350" x2="720" y2="460" stroke="var(--green)" stroke-width="1" opacity="0.5"/>
+      <text x="930" y="395" fill="var(--green)" font-size="9" font-weight="600">1     *</text>
+
+      <!-- Restaurant → Dish -->
+      <line x1="1100" y1="350" x2="950" y2="650" stroke="var(--green)" stroke-width="1" opacity="0.4"/>
+      <text x="1050" y="500" fill="var(--green)" font-size="9" font-weight="600">1     *</text>
+
+      <!-- Driver → FoodOrder -->
+      <line x1="580" y1="340" x2="580" y2="410" stroke="var(--cyan)" stroke-width="1" opacity="0.5"/>
+      <text x="585" y="375" fill="var(--cyan)" font-size="9" font-weight="600">0..1  *</text>
+
+      <!-- Composition diamond: FoodOrder ◆── OrderItem -->
+      <polygon points="460,575 470,568 480,575 470,582" fill="var(--yellow)" stroke="var(--yellow)" stroke-width="1"/>
+
+      <!-- Composition diamond: FoodOrder ◆── Message -->
+      <polygon points="520,585 530,578 540,585 530,592" fill="var(--yellow)" stroke="var(--yellow)" stroke-width="1"/>
+      <line x1="530" y1="592" x2="495" y2="820" stroke="var(--yellow)" stroke-width="1" opacity="0.4" stroke-dasharray="4,3"/>
+
+    </svg>
+  </div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div>Abstract / Root Entity</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--rose)"></div>Client Hierarchy</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--cyan)"></div>Driver Hierarchy</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>Restaurant Hierarchy</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--yellow)"></div>Aggregate (FoodOrder)</div>
+    <div class="legend-item"><span style="font-size:10px">◆</span> Composition</div>
+    <div class="legend-item"><span style="font-size:10px">▷</span> Inheritance</div>
+  </div>
+</div>
+
+<!-- ============ DIAGRAM 4: SEQUENCE — AUTH ============ -->
+<div class="diagram-wrap" id="dw3">
+  <div class="diagram-header">
+    <h2>Sequence Diagram — Authentication and JWT Issuance</h2>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <span class="badge">POST /api/auth/login</span>
+      <div class="zoom-controls">
+        <button class="zoom-btn" onclick="zoom(3,-0.1)"><i class="fa-solid fa-minus"></i></button>
+        <button class="zoom-btn" onclick="zoom(3,0)"><i class="fa-solid fa-expand"></i></button>
+        <button class="zoom-btn" onclick="zoom(3,0.1)"><i class="fa-solid fa-plus"></i></button>
+      </div>
+    </div>
+  </div>
+  <div class="diagram-scroll">
+    <svg id="svg3" viewBox="0 0 920 780" style="min-width:700px;">
+      <pattern id="grid4" width="40" height="40" patternUnits="userSpaceOnUse">
+        <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.015)" stroke-width="0.5"/>
+      </pattern>
+      <rect width="920" height="780" fill="url(#grid4)"/>
+
+      <!-- Participants -->
+      <g>
+        <rect x="30" y="15" width="120" height="40" rx="6" fill="rgba(251,113,133,0.15)" stroke="var(--rose)" stroke-width="1.5"/>
+        <text x="90" y="40" text-anchor="middle" fill="var(--rose)" font-size="12" font-weight="600">Client</text>
+        <rect x="195" y="15" width="140" height="40" rx="6" fill="rgba(251,191,36,0.12)" stroke="var(--yellow)" stroke-width="1.5"/>
+        <text x="265" y="40" text-anchor="middle" fill="var(--yellow)" font-size="12" font-weight="600">AuthController</text>
+        <rect x="400" y="15" width="120" height="40" rx="6" fill="rgba(249,115,22,0.12)" stroke="var(--accent)" stroke-width="1.5"/>
+        <text x="460" y="40" text-anchor="middle" fill="var(--accent)" font-size="12" font-weight="600">AuthService</text>
+        <rect x="580" y="15" width="130" height="40" rx="6" fill="rgba(52,211,153,0.12)" stroke="var(--green)" stroke-width="1.5"/>
+        <text x="645" y="40" text-anchor="middle" fill="var(--green)" font-size="11" font-weight="600">UserRepository</text>
+        <rect x="770" y="15" width="130" height="40" rx="6" fill="rgba(34,211,238,0.12)" stroke="var(--cyan)" stroke-width="1.5"/>
+        <text x="835" y="40" text-anchor="middle" fill="var(--cyan)" font-size="11" font-weight="600">JwtUtil</text>
+      </g>
+
+      <!-- Lifelines -->
+      <line x1="90" y1="55" x2="90" y2="760" stroke="var(--rose)" stroke-width="1" stroke-dasharray="4,4" opacity="0.3"/>
+      <line x1="265" y1="55" x2="265" y2="760" stroke="var(--yellow)" stroke-width="1" stroke-dasharray="4,4" opacity="0.3"/>
+      <line x1="460" y1="55" x2="460" y2="760" stroke="var(--accent)" stroke-width="1" stroke-dasharray="4,4" opacity="0.3"/>
+      <line x1="645" y1="55" x2="645" y2="760" stroke="var(--green)" stroke-width="1" stroke-dasharray="4,4" opacity="0.3"/>
+      <line x1="835" y1="55" x2="835" y2="760" stroke="var(--cyan)" stroke-width="1" stroke-dasharray="4,4" opacity="0.3"/>
+
+      <!-- JwtFilter check (implicit) -->
+      <rect x="50" y="70" width="810" height="30" rx="4" fill="none" stroke="var(--muted)" stroke-width="0.8" stroke-dasharray="3,3"/>
+      <text x="455" y="89" text-anchor="middle" fill="var(--muted)" font-size="9" font-style="italic">JwtFilter validates Bearer token (not required for /api/auth/login — public endpoint)</text>
+
+      <!-- 1. POST /api/auth/login -->
+      <line x1="90" y1="120" x2="265" y2="120" stroke="var(--fg)" stroke-width="1.5" marker-end="url(#arrowW)"/>
+      <text x="178" y="113" text-anchor="middle" fill="var(--fg)" font-size="10" font-weight="500">POST /api/auth/login</text>
+      <text x="178" y="132" text-anchor="middle" fill="var(--muted)" font-size="9" class="mono">{username, password}</text>
+
+      <!-- 2. AuthController → AuthService -->
+      <line x1="265" y1="160" x2="460" y2="160" stroke="var(--fg)" stroke-width="1.5" marker-end="url(#arrowW)"/>
+      <text x="363" y="153" text-anchor="middle" fill="var(--fg)" font-size="10">login(username, password)</text>
+
+      <!-- 3. AuthService → UserRepository -->
+      <line x1="460" y1="200" x2="645" y2="200" stroke="var(--fg)" stroke-width="1.5" marker-end="url(#arrowW)"/>
+      <text x="553" y="193" text-anchor="middle" fill="var(--fg)" font-size="10">findByUsername(username)</text>
+
+      <!-- 4. Return User -->
+      <line x1="645" y1="235" x2="460" y2="235" stroke="var(--muted)" stroke-width="1" stroke-dasharray="5,3" marker-end="url(#arrowM)"/>
+      <text x="553" y="228" text-anchor="middle" fill="var(--muted)" font-size="9">User entity (or null)</text>
+
+      <!-- 5. BCrypt check (self-call) -->
+      <rect x="465" y="260" width="130" height="35" rx="4" fill="rgba(249,115,22,0.08)" stroke="var(--accent)" stroke-width="1"/>
+      <text x="530" y="275" text-anchor="middle" fill="var(--accent)" font-size="9">BCryptPasswordEncoder</text>
+      <text x="530" y="288" text-anchor="middle" fill="var(--accent)" font-size="9">.matches(pw, hash)</text>
+
+      <!-- ALT frame -->
+      <rect x="50" y="315" width="810" height="420" rx="4" fill="none" stroke="var(--yellow)" stroke-width="1.5"/>
+      <rect x="50" y="315" width="50" height="22" rx="4" fill="var(--yellow)" opacity="0.2"/>
+      <text x="75" y="330" text-anchor="middle" fill="var(--yellow)" font-size="10" font-weight="700">alt</text>
+
+      <!-- [Credentials valid] -->
+      <text x="110" y="342" fill="var(--green)" font-size="10" font-weight="600">[credentials match]</text>
+
+      <!-- 6. AuthService → JwtUtil -->
+      <line x1="460" y1="365" x2="835" y2="365" stroke="var(--fg)" stroke-width="1.5" marker-end="url(#arrowW)"/>
+      <text x="648" y="358" text-anchor="middle" fill="var(--fg)" font-size="10">generateToken(user.id, user.role)</text>
+
+      <!-- 7. JwtUtil self-call (build JWT) -->
+      <rect x="840" y="385" width="70" height="50" rx="4" fill="rgba(34,211,238,0.08)" stroke="var(--cyan)" stroke-width="1"/>
+      <text x="875" y="400" text-anchor="middle" fill="var(--cyan)" font-size="8">Jwts.builder()</text>
+      <text x="875" y="412" text-anchor="middle" fill="var(--cyan)" font-size="8">.subject(id)</text>
+      <text x="875" y="424" text-anchor="middle" fill="var(--cyan)" font-size="8">.claim(role)</text>
+      <text x="875" y="436" text-anchor="middle" fill="var(--cyan)" font-size="7">.sign(HMAC-SHA256)</text>
+
+      <!-- 8. Return JWT -->
+      <line x1="835" y1="455" x2="460" y2="455" stroke="var(--muted)" stroke-width="1" stroke-dasharray="5,3" marker-end="url(#arrowM)"/>
+      <text x="648" y="448" text-anchor="middle" fill="var(--muted)" font-size="9">JWT string (expires 24h)</text>
+
+      <!-- 9. AuthService → AuthController return -->
+      <line x1="460" y1="490" x2="265" y2="490" stroke="var(--muted)" stroke-width="1" stroke-dasharray="5,3" marker-end="url(#arrowM)"/>
+      <text x="363" y="483" text-anchor="middle" fill="var(--muted)" font-size="9">LoginResponse(token, id, role)</text>
+
+      <!-- 10. AuthController → Client HTTP 200 -->
+      <line x1="265" y1="530" x2="90" y2="530" stroke="var(--green)" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arrowG)"/>
+      <text x="178" y="523" text-anchor="middle" fill="var(--green)" font-size="10" font-weight="600">HTTP 200 OK</text>
+      <text x="178" y="542" text-anchor="middle" fill="var(--muted)" font-size="9" class="mono">{token, id, username, role}</text>
+
+      <!-- Separator line -->
+      <line x1="55" y1="565" x2="855" y2="565" stroke="var(--yellow)" stroke-width="1" stroke-dasharray="8,4"/>
+
+      <!-- [Credentials invalid] -->
+      <text x="110" y="585" fill="var(--rose)" font-size="10" font-weight="600">[credentials do NOT match]</text>
+
+      <!-- Exception thrown -->
+      <line x1="460" y1="610" x2="265" y2="610" stroke="var(--rose)" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arrowR)"/>
+      <text x="363" y="603" text-anchor="middle" fill="var(--rose)" font-size="10">RuntimeException</text>
+
+      <!-- HTTP 401 -->
+      <line x1="265" y1="650" x2="90" y2="650" stroke="var(--rose)" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arrowR)"/>
+      <text x="178" y="643" text-anchor="middle" fill="var(--rose)" font-size="10" font-weight="600">HTTP 401 Unauthorized</text>
+
+      <!-- Note about subsequent requests -->
+      <rect x="140" y="700" width="640" height="50" rx="6" fill="rgba(34,211,238,0.06)" stroke="var(--cyan)" stroke-width="1"/>
+      <text x="460" y="718" text-anchor="middle" fill="var(--cyan)" font-size="10" font-weight="500">Subsequent requests include: Authorization: Bearer &lt;token&gt;</text>
+      <text x="460" y="736" text-anchor="middle" fill="var(--muted)" font-size="9">JwtFilter (OncePerRequestFilter) validates token → sets SecurityContext</text>
+
+      <defs>
+        <marker id="arrowW" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="var(--fg)"/></marker>
+        <marker id="arrowM" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="var(--muted)"/></marker>
+        <marker id="arrowG" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="var(--green)"/></marker>
+        <marker id="arrowR" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="var(--rose)"/></marker>
+      </defs>
+    </svg>
+  </div>
+</div>
+
+<!-- ============ DIAGRAM 5: SEQUENCE — ORDER PLACEMENT ============ -->
+<div class="diagram-wrap" id="dw4">
+  <div class="diagram-header">
+    <h2>Sequence Diagram — Order Placement with Dynamic Pricing</h2>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <span class="badge">POST /api/orders</span>
+      <div class="zoom-controls">
+        <button class="zoom-btn" onclick="zoom(4,-0.1)"><i class="fa-solid fa-minus"></i></button>
+        <button class="zoom-btn" onclick="zoom(4,0)"><i class="fa-solid fa-expand"></i></button>
+        <button class="zoom-btn" onclick="zoom(4,0.1)"><i class="fa-solid fa-plus"></i></button>
+      </div>
+    </div>
+  </div>
+  <div class="diagram-scroll">
+    <svg id="svg4" viewBox="0 0 920 900" style="min-width:700px;">
+      <pattern id="grid5" width="40" height="40" patternUnits="userSpaceOnUse">
+        <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.015)" stroke-width="0.5"/>
+      </pattern>
+      <rect width="920" height="900" fill="url(#grid5)"/>
+
+      <!-- Participants -->
+      <rect x="30" y="15" width="100" height="38" rx="6" fill="rgba(251,113,133,0.15)" stroke="var(--rose)" stroke-width="1.5"/>
+      <text x="80" y="39" text-anchor="middle" fill="var(--rose)" font-size="11" font-weight="600">Client</text>
+      <rect x="180" y="15" width="130" height="38" rx="6" fill="rgba(96,165,250,0.12)" stroke="var(--blue)" stroke-width="1.5"/>
+      <text x="245" y="39" text-anchor="middle" fill="var(--blue)" font-size="11" font-weight="600">JwtFilter</text>
+      <rect x="370" y="15" width="140" height="38" rx="6" fill="rgba(251,191,36,0.12)" stroke="var(--yellow)" stroke-width="1.5"/>
+      <text x="440" y="39" text-anchor="middle" fill="var(--yellow)" font-size="11" font-weight="600">OrderController</text>
+      <rect x="570" y="15" width="120" height="38" rx="6" fill="rgba(249,115,22,0.12)" stroke="var(--accent)" stroke-width="1.5"/>
+      <text x="630" y="39" text-anchor="middle" fill="var(--accent)" font-size="11" font-weight="600">OrderService</text>
+      <rect x="750" y="15" width="130" height="38" rx="6" fill="rgba(52,211,153,0.12)" stroke="var(--green)" stroke-width="1.5"/>
+      <text x="815" y="39" text-anchor="middle" fill="var(--green)" font-size="11" font-weight="600">DishRepository</text>
+
+      <!-- Lifelines -->
+      <line x1="80" y1="53" x2="80" y2="880" stroke="var(--rose)" stroke-width="1" stroke-dasharray="4,4" opacity="0.3"/>
+      <line x1="245" y1="53" x2="245" y2="880" stroke="var(--blue)" stroke-width="1" stroke-dasharray="4,4" opacity="0.3"/>
+      <line x1="440" y1="53" x2="440" y2="880" stroke="var(--yellow)" stroke-width="1" stroke-dasharray="4,4" opacity="0.3"/>
+      <line x1="630" y1="53" x2="630" y2="880" stroke="var(--accent)" stroke-width="1" stroke-dasharray="4,4" opacity="0.3"/>
+      <line x1="815" y1="53" x2="815" y2="880" stroke="var(--green)" stroke-width="1" stroke-dasharray="4,4" opacity="0.3"/>
+
+      <!-- 1. POST request with JWT -->
+      <line x1="80" y1="80" x2="245" y2="80" stroke="var(--fg)" stroke-width="1.5" marker-end="url(#arr5w)"/>
+      <text x="163" y="73" text-anchor="middle" fill="var(--fg)" font-size="10" font-weight="500">POST /api/orders</text>
+      <text x="163" y="92" text-anchor="middle" fill="var(--muted)" font-size="8" class="mono">Authorization: Bearer &lt;jwt&gt;</text>
+      <text x="163" y="103" text-anchor="middle" fill="var(--muted)" font-size="8" class="mono">{restaurantId, items[], paymentMethod}</text>
+
+      <!-- 2. JwtFilter validates -->
+      <rect x="250" y="115" width="100" height="40" rx="4" fill="rgba(96,165,250,0.08)" stroke="var(--blue)" stroke-width="1"/>
+      <text x="300" y="132" text-anchor="middle" fill="var(--blue)" font-size="9">validate token</text>
+      <text x="300" y="145" text-anchor="middle" fill="var(--blue)" font-size="8">set SecurityContext</text>
+
+      <!-- SecurityConfig check -->
+      <text x="300" y="170" text-anchor="middle" fill="var(--muted)" font-size="8" font-style="italic">requires ROLE_CLIENT ✓</text>
+
+      <!-- 3. Pass to controller -->
+      <line x1="245" y1="185" x2="440" y2="185" stroke="var(--fg)" stroke-width="1.5" marker-end="url(#arr5w)"/>
+      <text x="343" y="178" text-anchor="middle" fill="var(--fg)" font-size="10">create(orderRequest)</text>
+
+      <!-- 4. Controller extracts id from JWT -->
+      <rect x="445" y="200" width="120" height="22" rx="3" fill="rgba(251,191,36,0.08)" stroke="var(--yellow)" stroke-width="0.8"/>
+      <text x="505" y="215" text-anchor="middle" fill="var(--yellow)" font-size="8">JwtUtil.extractId(token)</text>
+
+      <!-- 5. Controller → OrderService -->
+      <line x1="440" y1="240" x2="630" y2="240" stroke="var(--fg)" stroke-width="1.5" marker-end="url(#arr5w)"/>
+      <text x="535" y="233" text-anchor="middle" fill="var(--fg)" font-size="10">createOrder(clientId, request)</text>
+
+      <!-- LOOP frame for item pricing -->
+      <rect x="550" y="270" width="340" height="170" rx="4" fill="none" stroke="var(--violet)" stroke-width="1.5"/>
+      <rect x="550" y="270" width="55" height="22" rx="4" fill="var(--violet)" opacity="0.2"/>
+      <text x="578" y="285" text-anchor="middle" fill="var(--violet)" font-size="10" font-weight="700">loop</text>
+      <text x="615" y="285" fill="var(--violet)" font-size="9">[for each item in order]</text>
+
+      <!-- 6. Fetch dish -->
+      <line x1="630" y1="310" x2="815" y2="310" stroke="var(--fg)" stroke-width="1.5" marker-end="url(#arr5w)"/>
+      <text x="723" y="303" text-anchor="middle" fill="var(--fg)" font-size="10">findById(dishId)</text>
+
+      <!-- 7. Return dish -->
+      <line x1="815" y1="340" x2="630" y2="340" stroke="var(--muted)" stroke-width="1" stroke-dasharray="5,3" marker-end="url(#arr5m)"/>
+      <text x="723" y="333" text-anchor="middle" fill="var(--muted)" font-size="9">Dish entity</text>
+
+      <!-- 8. Calculate item price -->
+      <rect x="635" y="360" width="170" height="35" rx="4" fill="rgba(249,115,22,0.08)" stroke="var(--accent)" stroke-width="1"/>
+      <text x="720" y="376" text-anchor="middle" fill="var(--accent)" font-size="9">baseTotal += dish.price × qty</text>
+      <text x="720" y="390" text-anchor="middle" fill="var(--accent)" font-size="8">create OrderItem(dish, qty, price)</text>
+
+      <!-- After loop: Dynamic pricing -->
+      <rect x="600" y="460" width="260" height="105" rx="6" fill="rgba(251,191,36,0.08)" stroke="var(--yellow)" stroke-width="1.5"/>
+      <text x="730" y="478" text-anchor="middle" fill="var(--yellow)" font-size="10" font-weight="600">getDynamicPricingMultiplier()</text>
+      <text x="730" y="496" text-anchor="middle" fill="var(--fg)" font-size="9">11:00–13:59 → ×1.15 (peak lunch)</text>
+      <text x="730" y="512" text-anchor="middle" fill="var(--fg)" font-size="9">18:00–20:59 → ×1.15 (peak dinner)</text>
+      <text x="730" y="528" text-anchor="middle" fill="var(--fg)" font-size="9">14:00–16:59 → ×0.90 (off-peak)</text>
+      <text x="730" y="544" text-anchor="middle" fill="var(--muted)" font-size="9">otherwise → ×1.00</text>
+      <text x="730" y="560" text-anchor="middle" fill="var(--yellow)" font-size="9" font-weight="500">total = baseTotal × multiplier + 2.99</text>
+
+      <!-- 9. Persist order -->
+      <rect x="635" y="580" width="160" height="35" rx="4" fill="rgba(52,211,153,0.08)" stroke="var(--green)" stroke-width="1"/>
+      <text x="715" y="596" text-anchor="middle" fill="var(--green)" font-size="9">orderRepo.save(foodOrder)</text>
+      <text x="715" y="610" text-anchor="middle" fill="var(--green)" font-size="8">status = CONFIRMED</text>
+
+      <!-- 10. Return order -->
+      <line x1="630" y1="635" x2="440" y2="635" stroke="var(--muted)" stroke-width="1" stroke-dasharray="5,3" marker-end="url(#arr5m)"/>
+      <text x="535" y="628" text-anchor="middle" fill="var(--muted)" font-size="9">saved FoodOrder</text>
+
+      <!-- 11. Controller → Client -->
+      <line x1="440" y1="670" x2="245" y2="670" stroke="var(--muted)" stroke-width="1" stroke-dasharray="5,3" marker-end="url(#arr5m)"/>
+      <line x1="245" y1="690" x2="80" y2="690" stroke="var(--green)" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr5g)"/>
+      <text x="260" y="683" text-anchor="middle" fill="var(--green)" font-size="10" font-weight="600">HTTP 201 Created</text>
+      <text x="260" y="705" text-anchor="middle" fill="var(--muted)" font-size="8" class="mono">{id, totalPrice, status: CONFIRMED, items[]}</text>
+
+      <!-- Note -->
+      <rect x="80" y="740" width="760" height="45" rx="6" fill="rgba(251,191,36,0.05)" stroke="var(--yellow)" stroke-width="0.8"/>
+      <text x="460" y="758" text-anchor="middle" fill="var(--yellow)" font-size="9" font-weight="500">BigDecimal used throughout to avoid floating-point rounding errors</text>
+      <text x="460" y="774" text-anchor="middle" fill="var(--muted)" font-size="8">RoundingMode.HALF_UP applied to final total. Delivery fee fixed at €2.99.</text>
+
+      <defs>
+        <marker id="arr5w" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="var(--fg)"/></marker>
+        <marker id="arr5m" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="var(--muted)"/></marker>
+        <marker id="arr5g" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="var(--green)"/></marker>
+      </defs>
+    </svg>
+  </div>
+</div>
+
+<!-- ============ DIAGRAM 6: SEQUENCE — ORDER CLAIMING ============ -->
+<div class="diagram-wrap" id="dw5">
+  <div class="diagram-header">
+    <h2>Sequence Diagram — Order Claiming by Driver</h2>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <span class="badge">PUT /api/orders/{id}/claim</span>
+      <div class="zoom-controls">
+        <button class="zoom-btn" onclick="zoom(5,-0.1)"><i class="fa-solid fa-minus"></i></button>
+        <button class="zoom-btn" onclick="zoom(5,0)"><i class="fa-solid fa-expand"></i></button>
+        <button class="zoom-btn" onclick="zoom(5,0.1)"><i class="fa-solid fa-plus"></i></button>
+      </div>
+    </div>
+  </div>
+  <div class="diagram-scroll">
+    <svg id="svg5" viewBox="0 0 860 880" style="min-width:650px;">
+      <pattern id="grid6" width="40" height="40" patternUnits="userSpaceOnUse">
+        <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.015)" stroke-width="0.5"/>
+      </pattern>
+      <rect width="860" height="880" fill="url(#grid6)"/>
+
+      <!-- Participants -->
+      <rect x="30" y="15" width="90" height="38" rx="6" fill="rgba(34,211,238,0.15)" stroke="var(--cyan)" stroke-width="1.5"/>
+      <text x="75" y="39" text-anchor="middle" fill="var(--cyan)" font-size="11" font-weight="600">Driver</text>
+      <rect x="175" y="15" width="130" height="38" rx="6" fill="rgba(96,165,250,0.12)" stroke="var(--blue)" stroke-width="1.5"/>
+      <text x="240" y="39" text-anchor="middle" fill="var(--blue)" font-size="11" font-weight="600">JwtFilter</text>
+      <rect x="365" y="15" width="140" height="38" rx="6" fill="rgba(251,191,36,0.12)" stroke="var(--yellow)" stroke-width="1.5"/>
+      <text x="435" y="39" text-anchor="middle" fill="var(--yellow)" font-size="11" font-weight="600">OrderController</text>
+      <rect x="565" y="15" width="120" height="38" rx="6" fill="rgba(249,115,22,0.12)" stroke="var(--accent)" stroke-width="1.5"/>
+      <text x="625" y="39" text-anchor="middle" fill="var(--accent)" font-size="11" font-weight="600">OrderService</text>
+      <rect x="735" y="15" width="100" height="38" rx="6" fill="rgba(52,211,153,0.12)" stroke="var(--green)" stroke-width="1.5"/>
+      <text x="785" y="39" text-anchor="middle" fill="var(--green)" font-size="10" font-weight="600">OrderRepo</text>
+
+      <!-- Lifelines -->
+      <line x1="75" y1="53" x2="75" y2="860" stroke="var(--cyan)" stroke-width="1" stroke-dasharray="4,4" opacity="0.3"/>
+      <line x1="240" y1="53" x2="240" y2="860" stroke="var(--blue)" stroke-width="1" stroke-dasharray="4,4" opacity="0.3"/>
+      <line x1="435" y1="53" x2="435" y2="860" stroke="var(--yellow)" stroke-width="1" stroke-dasharray="4,4" opacity="0.3"/>
+      <line x1="625" y1="53" x2="625" y2="860" stroke="var(--accent)" stroke-width="1" stroke-dasharray="4,4" opacity="0.3"/>
+      <line x1="785" y1="53" x2="785" y2="860" stroke="var(--green)" stroke-width="1" stroke-dasharray="4,4" opacity="0.3"/>
+
+      <!-- 1. PUT request -->
+      <line x1="75" y1="80" x2="240" y2="80" stroke="var(--fg)" stroke-width="1.5" marker-end="url(#arr6w)"/>
+      <text x="158" y="73" text-anchor="middle" fill="var(--fg)" font-size="10" font-weight="500">PUT /api/orders/{id}/claim</text>
+      <text x="158" y="93" text-anchor="middle" fill="var(--muted)" font-size="8" class="mono">Authorization: Bearer &lt;jwt&gt;</text>
+
+      <!-- 2. JwtFilter -->
+      <rect x="245" y="108" width="100" height="35" rx="4" fill="rgba(96,165,250,0.08)" stroke="var(--blue)" stroke-width="1"/>
+      <text x="295" y="123" text-anchor="middle" fill="var(--blue)" font-size="9">validate token</text>
+      <text x="295" y="136" text-anchor="middle" fill="var(--blue)" font-size="8">requires ROLE_DRIVER ✓</text>
+
+      <!-- 3. To controller -->
+      <line x1="240" y1="160" x2="435" y2="160" stroke="var(--fg)" stroke-width="1.5" marker-end="url(#arr6w)"/>
+      <text x="338" y="153" text-anchor="middle" fill="var(--fg)" font-size="10">claimOrder(orderId)</text>
+
+      <!-- 4. Extract driverId from JWT -->
+      <rect x="440" y="175" width="120" height="20" rx="3" fill="rgba(251,191,36,0.08)" stroke="var(--yellow)" stroke-width="0.8"/>
+      <text x="500" y="189" text-anchor="middle" fill="var(--yellow)" font-size="8">JwtUtil.extractId(token)</text>
+
+      <!-- 5. To service -->
+      <line x1="435" y1="210" x2="625" y2="210" stroke="var(--fg)" stroke-width="1.5" marker-end="url(#arr6w)"/>
+      <text x="530" y="203" text-anchor="middle" fill="var(--fg)" font-size="10">claimOrder(orderId, driverId)</text>
+
+      <!-- 6. Load order from DB -->
+      <line x1="625" y1="245" x2="785" y2="245" stroke="var(--fg)" stroke-width="1.5" marker-end="url(#arr6w)"/>
+      <text x="705" y="238" text-anchor="middle" fill="var(--fg)" font-size="10">findById(orderId)</text>
+      <line x1="785" y1="270" x2="625" y2="270" stroke="var(--muted)" stroke-width="1" stroke-dasharray="5,3" marker-end="url(#arr6m)"/>
+      <text x="705" y="263" text-anchor="middle" fill="var(--muted)" font-size="9">FoodOrder</text>
+
+      <!-- ALT frame -->
+      <rect x="45" y="300" width="780" height="380" rx="4" fill="none" stroke="var(--yellow)" stroke-width="1.5"/>
+      <rect x="45" y="300" width="50" height="22" rx="4" fill="var(--yellow)" opacity="0.2"/>
+      <text x="70" y="315" text-anchor="middle" fill="var(--yellow)" font-size="10" font-weight="700">alt</text>
+
+      <!-- [Already claimed] -->
+      <text x="105" y="332" fill="var(--rose)" font-size="10" font-weight="600">[order.getDeliveryPerson() != null]</text>
+
+      <!-- Check -->
+      <rect x="630" y="345" width="150" height="30" rx="4" fill="rgba(251,113,133,0.08)" stroke="var(--rose)" stroke-width="1"/>
+      <text x="705" y="364" text-anchor="middle" fill="var(--rose)" font-size
